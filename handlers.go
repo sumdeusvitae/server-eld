@@ -43,7 +43,8 @@ func DriversHandler(w http.ResponseWriter, r *http.Request) {
 	mongoURI := os.Getenv("MONGO_URI")
 
 	if mongoURI == "" {
-		log.Fatal("MONGO_URI not set")
+		http.Error(w, "MONGO_URI not set", http.StatusInternalServerError)
+		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -51,7 +52,8 @@ func DriversHandler(w http.ResponseWriter, r *http.Request) {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, "client couldnt", http.StatusInternalServerError)
+		return
 	}
 
 	collection = client.Database("eld_data").Collection("drivers")
