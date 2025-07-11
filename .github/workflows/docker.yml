@@ -27,4 +27,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: sumdeusvitae/server-eld:latest
+          tags: kyrylosorokovskyi/server-eld:latest
