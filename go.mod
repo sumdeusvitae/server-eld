@@ -1,6 +1,6 @@
 module github.com/sumdeusvitae/server-eld
 
-go 1.24.5
+go 1.24.4
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect
