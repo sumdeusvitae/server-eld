@@ -14,10 +14,13 @@ import (
 var collection *mongo.Collection
 
 func main() {
-	// Only load .env in local/dev mode (optional logic)
-	// _ = godotenv.Load() // <-- Remove or comment out
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // fallback for local development
+	}
 	mongoURI := os.Getenv("MONGO_URI")
+
 	if mongoURI == "" {
 		log.Fatal("MONGO_URI not set")
 	}
@@ -34,5 +37,5 @@ func main() {
 
 	http.HandleFunc("/drivers", DriversHandler)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
