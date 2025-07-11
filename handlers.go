@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -31,45 +35,42 @@ var (
 )
 
 // Exported handler
-// func DriversHandler(w http.ResponseWriter, r *http.Request) {
-// 	now := time.Now()
-
-// 	if cachedDrivers == nil || now.Sub(lastFetched) > cacheDuration {
-// 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-// 		defer cancel()
-
-// 		cursor, err := collection.Find(ctx, bson.M{})
-// 		if err != nil {
-// 			http.Error(w, "Database query failed", http.StatusInternalServerError)
-// 			return
-// 		}
-// 		defer cursor.Close(ctx)
-
-// 		var drivers []Driver
-// 		for cursor.Next(ctx) {
-// 			var d Driver
-// 			if err := cursor.Decode(&d); err != nil {
-// 				log.Println("Error decoding driver:", err)
-// 				continue
-// 			}
-// 			drivers = append(drivers, d)
-// 		}
-
-// 		if err := cursor.Err(); err != nil {
-// 			http.Error(w, "Cursor error", http.StatusInternalServerError)
-// 			return
-// 		}
-
-// 		cachedDrivers = drivers
-// 		lastFetched = now
-// 		log.Println("Drivers refreshed from DB")
-// 	} else {
-// 		log.Println("Serving drivers from cache")
-// 	}
-
-//		w.Header().Set("Content-Type", "application/json")
-//		json.NewEncoder(w).Encode(cachedDrivers)
-//	}
 func DriversHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(`{"status":"mocked"}`))
+	now := time.Now()
+
+	if cachedDrivers == nil || now.Sub(lastFetched) > cacheDuration {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		cursor, err := collection.Find(ctx, bson.M{})
+		if err != nil {
+			http.Error(w, "Database query failed", http.StatusInternalServerError)
+			return
+		}
+		defer cursor.Close(ctx)
+
+		var drivers []Driver
+		for cursor.Next(ctx) {
+			var d Driver
+			if err := cursor.Decode(&d); err != nil {
+				log.Println("Error decoding driver:", err)
+				continue
+			}
+			drivers = append(drivers, d)
+		}
+
+		if err := cursor.Err(); err != nil {
+			http.Error(w, "Cursor error", http.StatusInternalServerError)
+			return
+		}
+
+		cachedDrivers = drivers
+		lastFetched = now
+		log.Println("Drivers refreshed from DB")
+	} else {
+		log.Println("Serving drivers from cache")
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cachedDrivers)
 }
