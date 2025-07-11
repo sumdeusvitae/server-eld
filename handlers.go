@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Driver struct moved here — only define once
@@ -37,6 +40,21 @@ var (
 // Exported handler
 func DriversHandler(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
+	mongoURI := os.Getenv("MONGO_URI")
+
+	if mongoURI == "" {
+		log.Fatal("MONGO_URI not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection = client.Database("eld_data").Collection("drivers")
 
 	if cachedDrivers == nil || now.Sub(lastFetched) > cacheDuration {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
