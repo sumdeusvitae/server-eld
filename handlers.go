@@ -63,10 +63,13 @@ func handleDriversPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, d := range req.Drivers {
-		d.LastUpdated = time.Now()
-		cachedDrivers = append(cachedDrivers, d)
+	cachedDrivers = make([]Driver, len(req.Drivers))
+	now := time.Now()
+	for i, d := range req.Drivers {
+		d.LastUpdated = now
+		cachedDrivers[i] = d
 	}
+	lastFetched = now
 
 	log.Printf("Received %d drivers\n", len(req.Drivers))
 	w.Header().Set("Content-Type", "application/json")
